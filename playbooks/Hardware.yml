@@ -1,0 +1,34 @@
+- hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Ensure results file exists
+      file:
+        path: /home/ermek/Ram1.csv
+        state: touch
+      delegate_to: localhost
+
+- hosts: ALLdelay
+  gather_facts: no
+  become: true
+  become_user: root
+  become_method: sudo
+  vars_files:
+    - /home/ermek/ansible/secret/secret.yml
+  tasks:
+    - name: Получить IP-адрес
+      shell: hostname -I | awk '{print $1}'
+      register: ip_info
+
+    - name: Получить общее количество оперативной памяти
+      shell: free -m | awk '/Mem:/ { print $2 }'
+      register: total_ram_info
+
+    - name: Получить используемое количество оперативной памяти
+      shell: free -m | awk '/Mem:/ { print $3 }'
+      register: used_ram_info
+
+    - name: Сохранить полученные данные в файл CSV
+      delegate_to: localhost
+      lineinfile:
+        path: /home/ermek/Ram1.csv
+        line: "{{ inventory_hostname }}, {{ ip_info.stdout.strip() }}, {{ total_ram_info.stdout.strip() }}, {{ used_ram_info.stdout.strip() }}"

@@ -1,0 +1,46 @@
+---
+- hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Ensure results file exists
+      file:
+        path: /home/ermek/alldelaynvme.csv
+        state: touch
+      delegate_to: localhost
+
+- hosts: ALLdelay
+  gather_facts: no
+  become: true
+  become_user: root
+  become_method: sudo
+  vars_files:
+    - /home/ermek/ansible/secret/secret.yml
+  tasks:
+    - name: Получить информацию о процессоре
+      shell: cat /proc/cpuinfo | grep 'model name' | head -1
+      register: cpu_info
+
+    - name: Получить информацию о производителе и модели ОЗУ
+      shell: dmidecode --type memory | grep 'Part Number' | head -1
+      become: yes
+      register: ram_info
+
+    - name: Получить информацию о жестком диске
+      shell: cat /sys/block/nvme0n1/device/model
+      register: disk_info
+
+    - name: Получить информацию о версии и типе операционной системы
+      shell: lsb_release -d
+      register: os_info
+
+    - name: Получить информацию о нагрузке на сеть
+      shell: "sar -n DEV 1 1 | grep 'Average:     eth0' | awk '{print $5 \" KB/s in, \" $6 \" KB/s out\"}'"
+      register: network_load
+
+    - name: Сохранить полученные данные в файл CSV
+      delegate_to: localhost
+      lineinfile:
+        path: /home/ermek/alldelaynvme.csv
+        line: "{{ inventory_hostname }},{{ cpu_info.stdout }},{{ ram_info.stdout }},{{ disk_info.stdout }},{{ os_info.stdout }},{{ network_load.stdout }}"
+
+

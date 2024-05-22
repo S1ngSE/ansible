@@ -1,0 +1,36 @@
+---
+- hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Ensure results file exists
+      file:
+        path: /home/ermek/resultsHardwr.csv
+        state: touch
+      delegate_to: localhost
+
+- hosts: ALLdelay
+  gather_facts: no
+  tasks:
+    - name: Get CPU model
+      command: cat /proc/cpuinfo | grep 'model name' | head -1
+      register: cpu_model
+
+    - name: Get RAM model
+      shell: dmidecode --type memory | grep 'Part Number' | head -1
+      become: yes
+      register: ram_model
+
+    - name: Get disk model
+      command: cat /sys/block/sda/device/model
+      register: disk_model
+
+    - name: Get OS version
+      command: lsb_release -d
+      register: os_version
+
+    - name: Save result to file
+      delegate_to: localhost
+      lineinfile:
+        path: /path/to/your/resultsHardwr.csv
+        line: "{{ inventory_hostname }},{{ cpu_model.stdout }},{{ ram_model.stdout }},{{ disk_model.stdout }},{{ os_version.stdout }}"
+

@@ -1,0 +1,10 @@
+---
+- name: Accept SSH fingerprint
+  hosts: FP
+  gather_facts: no
+  tasks:
+    - name: Run ssh-keyscan
+      local_action: 
+        module: shell 
+        _raw_params: ssh-keyscan -H {{ inventory_hostname }} >> /home/ermek/.ssh/known_hosts
+

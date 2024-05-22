@@ -1,0 +1,17 @@
+---
+- name: Собрать hostname
+  hosts: all
+  become: true
+  become_user: root
+  become_method: sudo
+  vars_files:
+    - /home/ermek/ansible/secret/secret.yml
+  tasks:
+    - name: Получить hostname
+      command: hostname
+      register: host_output
+
+    - name: Вывести hostname
+      debug:
+        msg: "Hostname для {{ inventory_hostname }}: {{ host_output.stdout }}"
+...

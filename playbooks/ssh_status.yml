@@ -1,0 +1,40 @@
+---
+- hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Ensure results file exists
+      file:
+        path: /home/ermek/ssh_status2.csv
+        state: touch
+      delegate_to: localhost
+
+- hosts: ALLdelay
+  gather_facts: no
+  become: true
+  become_user: root
+  become_method: sudo
+  vars_files:
+    - /home/ermek/ansible/secret/secret.yml
+  tasks:
+    - name: Проверить доступность SSH
+      wait_for_connection:
+        timeout: 5
+      delegate_to: "{{ inventory_hostname }}"
+      ignore_errors: yes
+      register: ssh_result
+
+    - set_fact:
+        ssh_status: "Соединение прошло успешно"
+        ssh_error: ""
+      when: ssh_result is success
+
+    - set_fact:
+        ssh_status: "Ошибка при соединении"
+        ssh_error: "{{ ssh_result.msg }}"
+      when: ssh_result is failed
+
+    - name: Сохранить IP-адрес хоста, статус SSH и сообщение об ошибке в файл CSV
+      delegate_to: localhost
+      lineinfile:
+        path: /home/ermek/ssh_status2.csv
+        line: "{{ inventory_hostname }},{{ ssh_status }},{{ ssh_error }}"

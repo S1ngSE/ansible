@@ -1,0 +1,28 @@
+---
+- hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Ensure results file exists
+      file:
+        path: /home/ermek/resultsTTKNVME.csv
+        state: touch
+      delegate_to: localhost
+
+- hosts: TTK
+  gather_facts: no
+  become: true
+  become_user: root
+  become_method: sudo
+  vars_files:
+    - /home/ermek/ansible/secret/secret.yml
+  tasks:
+    - name: Get model
+      shell: cat /sys/block/nvme0n1/device/model
+      register: model
+
+    - name: Save result to file
+      delegate_to: localhost
+      lineinfile:
+        path: /home/ermek/resultsTTKNVME.csv
+        line: "{{ inventory_hostname }},{{ model.stdout }}"
+

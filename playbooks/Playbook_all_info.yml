@@ -1,0 +1,40 @@
+---
+- hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Ensure results file exists
+      file:
+        path: /home/ermek/resultsALL.csv
+        state: touch
+      delegate_to: localhost
+
+- hosts: TTK
+  gather_facts: no
+  become: true
+  become_user: root
+  become_method: sudo
+  vars_files:
+    - /home/ermek/ansible/secret/secret.yml
+  tasks:
+    - name: Get disk model
+      command: cat /sys/block/sda/device/model
+      register: disk_model
+
+    - name: Get CPU info
+      command: cat /proc/cpuinfo
+      register: cpu_info
+
+    - name: Get RAM info
+      shell: free -h
+      register: ram_info
+
+    - name: Get OS info
+      command: lsb_release -a
+      register: os_info
+
+    - name: Save result to file
+      delegate_to: localhost
+      lineinfile:
+        path: /home/ermek/resultsALL.csv
+        line: >
+          "{{ inventory_hostname }},{{ disk_model.stdout }},{{ cpu_info.stdout }},{{ ram_info.stdout }},{{ os_info.stdout }}"
