@@ -4,7 +4,7 @@
   gather_facts: no
   vars_prompt:
     - name: "target_hosts"
-      prompt: "Введите хосты на которых нужно сохранить fingerprint"
+      prompt: "Введите хосты на которых нужно сохранить fingerprintы"
       private: no
     - name: "filename"
       prompt: "Введите название файла куда записать результаты"
