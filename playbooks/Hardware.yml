@@ -1,34 +1,54 @@
-- hosts: localhost
+---
+- hosts: "{{ target_hosts }}"
   gather_facts: no
-  tasks:
-    - name: Ensure results file exists
-      file:
-        path: /home/ermek/Ram1.csv
-        state: touch
-      delegate_to: localhost
-
-- hosts: ALLdelay
-  gather_facts: no
+  vars_prompt:
+    - name: "filename"
+      prompt: "Введите имя файла"
+      private: no
+    - name: "target_hosts"
+      prompt: "Введите целевые хосты"
+      private: no
   become: true
   become_user: root
   become_method: sudo
   vars_files:
     - /home/ermek/ansible/secret/secret.yml
   tasks:
-    - name: Получить IP-адрес
-      shell: hostname -I | awk '{print $1}'
-      register: ip_info
+    - name: Ensure results file exists
+      file:
+        path: /home/ermek/{{ filename }}.csv
+        state: touch
+      delegate_to: localhost
+    - name: Get CPU model
+      shell: cat /proc/cpuinfo | grep 'model name' | head -1
+      register: cpu_model
 
-    - name: Получить общее количество оперативной памяти
-      shell: free -m | awk '/Mem:/ { print $2 }'
-      register: total_ram_info
+    - name: Get RAM model
+      shell: dmidecode --type memory | grep 'Part Number' | head -1
+      register: ram_model
 
-    - name: Получить используемое количество оперативной памяти
-      shell: free -m | awk '/Mem:/ { print $3 }'
-      register: used_ram_info
+    - name: Get disk model
+      shell: cat /sys/block/sda/device/model
+      register: disk_model
 
-    - name: Сохранить полученные данные в файл CSV
+    - name: Get OS version
+      shell: lsb_release -d
+      register: os_version
+
+    - name: Get video card vendor
+      shell: lspci | grep VGA | cut -d ':' -f3 | cut -d '[' -f2 | cut -d ']' -f1
+      register: video_card_vendor
+
+    - name: Get video card model
+      shell: lspci | grep VGA | cut -d ':' -f3 | cut -d ']' -f2
+      register: video_card_model
+
+    - name: Get Motherboard model
+      shell: dmidecode -t baseboard | grep 'Product Name'
+      register: motherboard_model
+      
+    - name: Save result to file
       delegate_to: localhost
       lineinfile:
-        path: /home/ermek/Ram1.csv
-        line: "{{ inventory_hostname }}, {{ ip_info.stdout.strip() }}, {{ total_ram_info.stdout.strip() }}, {{ used_ram_info.stdout.strip() }}"
+        path: "/home/ermek/{{ filename }}.csv"
+        line: "{{ inventory_hostname }},{{ cpu_model.stdout }},{{ motherboard_model.stdout }},{{ ram_model.stdout }},{{ disk_model.stdout }},{{ os_version.stdout }},{{ video_card_vendor.stdout }},{{ video_card_model.stdout }}"

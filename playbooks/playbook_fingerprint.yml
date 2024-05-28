@@ -1,6 +1,6 @@
 ---
 - name: Accept SSH fingerprint
-  hosts: FP
+  hosts: SHYM
   gather_facts: no
   tasks:
     - name: Run ssh-keyscan
