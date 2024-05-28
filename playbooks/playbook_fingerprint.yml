@@ -1,10 +1,38 @@
 ---
 - name: Accept SSH fingerprint
-  hosts: SHYM
+  hosts: "{{ target_hosts }}"
   gather_facts: no
+  vars_prompt:
+    - name: "target_hosts"
+      prompt: "Введите хосты на которых нужно сохранить fingerprint"
+      private: no
+    - name: "filename"
+      prompt: "Введите название файла куда записать результаты"
+      private: no
+    - name: "secret"
+      prompt: "Какие пароли используем?"
+      private: no
+  become: true
+  become_user: root
+  become_method: sudo
+  vars_files:
+    - /home/ermek/ansible/secret/{{ secret }}.yml
   tasks:
     - name: Run ssh-keyscan
       local_action: 
         module: shell 
         _raw_params: ssh-keyscan -H {{ inventory_hostname }} >> /home/ermek/.ssh/known_hosts
-
+    - name: get hostname
+      shell: hostname
+      register: hostname
+    - name: create csv file
+      file:
+        path: "/home/ermek/csvfiles/{{ filename }}.csv"
+        state: touch
+      delegate_to: localhost
+    - name: write result of playbook
+      delegate_to: localhost
+      lineinfile:
+        path: "/home/ermek/csvfiles/{{ filename }}.csv"
+        line: "{{ inventory_hostname }}, {{ hostname.stdout }}"
+      
