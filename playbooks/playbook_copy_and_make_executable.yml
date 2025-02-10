@@ -1,0 +1,92 @@
+---
+- name: Copy files and make them executable one by one
+  hosts: "{{ target_hosts }}"
+  gather_facts: no
+  vars_prompt:
+    - name: "target_hosts"
+      prompt: "Введите хосты, на которые нужно скопировать файлы"
+      private: no
+    - name: "secret"
+      prompt: "Введите имя файла с секретами (без расширения .yml)"
+      private: no
+  vars_files:
+    - /home/ermek/ansible/secret/{{ secret }}.yml
+  tasks:
+    - name: Set become pass
+      set_fact:
+        ansible_become_pass: "{{ ansible_ssh_pass }}"
+
+    - name: Copy auditd.yml
+      ansible.builtin.copy:
+        src: "/home/ermek/my_scripts/filebeat_linux/auditd.yml"
+        dest: "/home/ye.sariyev@sergekatr.local/auditd.yml"
+        mode: '0644'
+      become: true
+      become_user: ye.sariyev
+
+    - name: Make auditd.yml executable
+      ansible.builtin.file:
+        path: "/home/ye.sariyev@sergekatr.local/auditd.yml"
+        mode: '0755'
+      become: true
+      become_user: ye.sariyev
+
+    - name: Copy filebeat.yml
+      ansible.builtin.copy:
+        src: "/home/ermek/my_scripts/filebeat_linux/filebeat.yml"
+        dest: "/home/ye.sariyev@sergekatr.local/filebeat.yml"
+        mode: '0644'
+      become: true
+      become_user: ye.sariyev
+
+    - name: Make filebeat.yml executable
+      ansible.builtin.file:
+        path: "/home/ye.sariyev@sergekatr.local/filebeat.yml"
+        mode: '0755'
+      become: true
+      become_user: ye.sariyev
+
+    - name: Copy filebeat_deb.sh
+      ansible.builtin.copy:
+        src: "/home/ermek/my_scripts/filebeat_linux/filebeat_deb.sh"
+        dest: "/home/ye.sariyev@sergekatr.local/filebeat_deb.sh"
+        mode: '0644'
+      become: true
+      become_user: ye.sariyev
+
+    - name: Make filebeat_deb.sh executable
+      ansible.builtin.file:
+        path: "/home/ye.sariyev@sergekatr.local/filebeat_deb.sh"
+        mode: '0755'
+      become: true
+      become_user: ye.sariyev
+
+    - name: Copy filebeat_dnf.sh
+      ansible.builtin.copy:
+        src: "/home/ermek/my_scripts/filebeat_linux/filebeat_dnf.sh"
+        dest: "/home/ye.sariyev@sergekatr.local/filebeat_dnf.sh"
+        mode: '0644'
+      become: true
+      become_user: ye.sariyev
+
+    - name: Make filebeat_dnf.sh executable
+      ansible.builtin.file:
+        path: "/home/ye.sariyev@sergekatr.local/filebeat_dnf.sh"
+        mode: '0755'
+      become: true
+      become_user: ye.sariyev
+
+    - name: Copy filebeat_yum.sh
+      ansible.builtin.copy:
+        src: "/home/ermek/my_scripts/filebeat_linux/filebeat_yum.sh"
+        dest: "/home/ye.sariyev@sergekatr.local/filebeat_yum.sh"
+        mode: '0644'
+      become: true
+      become_user: ye.sariyev
+
+    - name: Make filebeat_yum.sh executable
+      ansible.builtin.file:
+        path: "/home/ye.sariyev@sergekatr.local/filebeat_yum.sh"
+        mode: '0755'
+      become: true
+      become_user: ye.sariyev

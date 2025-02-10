@@ -1,0 +1,19 @@
+---
+- name: SSH Login and Logout
+  hosts: "{{ target_hosts }}"
+  gather_facts: no
+  vars_prompt:
+    - name: "target_hosts"
+      prompt: "Введите хосты для SSH авторизации"
+      private: no
+    - name: "ansible_ssh_pass"
+      prompt: "Введите пароль для SSH"
+      private: yes
+  tasks:
+    - name: SSH Login and Logout
+      ansible.builtin.shell:
+        cmd: "whoami"
+      vars:
+        ansible_ssh_user: ye.sariyev
+        ansible_ssh_pass: "{{ ansible_ssh_pass }}"
+      become: false
