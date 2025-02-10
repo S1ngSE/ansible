@@ -1,0 +1,12 @@
+---
+- name: Run echo OK on TestTaldyk hosts
+  hosts: "{{ target_hosts | default('all') }}"
+  gather_facts: no
+  tasks:
+    - name: Print OK on each host
+      shell: echo OK
+      register: echo_result
+
+    - name: Show command output
+      debug:
+        msg: "Host {{ inventory_hostname }} responded: {{ echo_result.stdout }}"
